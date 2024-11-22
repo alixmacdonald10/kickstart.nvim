@@ -809,9 +809,7 @@ require('lazy').setup({
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
-      local statusline = require 'mini.statusline'
-      -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      require('mini.statusline').setup { use_icons = vim.g.have_nerd_font }
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
@@ -821,11 +819,29 @@ require('lazy').setup({
       -- return '%2l:%-2v'
       -- end
 
-      require('mini.tabline').setup()
+      require('mini.tabline').setup { use_icons = vim.g.have_nerd_font }
       require('mini.bracketed').setup()
 
       -- starter splash screen
-      require('mini.starter').setup()
+      local starter = require 'mini.starter'
+      starter.setup {
+        header = [[
+    ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗
+    ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║
+    ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║
+    ██║╚██╗██║██╔══╝  ██║   ██║██║   ██║██║██║╚██╔╝██║
+    ██║ ╚████║███████╗╚██████╔╝╚██████╔╝██║██║ ╚═╝ ██║
+    ╚═╝  ╚═══╝╚══════╝ ╚═════╝  ╚═════╝ ╚═╝╚═╝     ╚═╝
+  ]],
+        items = {
+          starter.sections.telescope(),
+        },
+        content_hooks = {
+          starter.gen_hook.adding_bullet(),
+          starter.gen_hook.aligning('center', 'center'),
+        },
+        footer = [[]],
+      }
 
       -- comments
       require('mini.comment').setup()
