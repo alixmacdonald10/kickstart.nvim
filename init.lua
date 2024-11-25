@@ -531,7 +531,16 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- rust_analyzer = {},  # NOTE: rust-analyzer is managed via rustup
-        ruff = {},
+        ruff = {
+          settings = {
+            trace = 'messages',
+            init_options = {
+              settings = {
+                logLevel = 'debug',
+              },
+            },
+          },
+        },
         black = {},
         sqlls = {},
         marksman = {},
@@ -643,7 +652,7 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        python = { 'isort', 'black' },
+        python = { 'ruff_organize_imports', 'ruff_format' },
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
       },
