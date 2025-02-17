@@ -553,7 +553,7 @@ require('lazy').setup({
         tflint = {},
         tfsec = {},
         trivy = {},
-        bufls = {},
+        --buf_ls = {},
         buf = {}, --proto fmt
 
         lemminx = {}, --xml
@@ -599,6 +599,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'buf-language-server', 'buf'
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -640,6 +641,7 @@ require('lazy').setup({
         python = { 'ruff_organize_imports', 'ruff_format' },
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        proto = { 'buf' },
       },
     },
   },
