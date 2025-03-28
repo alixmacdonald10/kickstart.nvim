@@ -19,7 +19,7 @@ return {
                         vim.keymap.set('n', '<leader>lwr', ':RustLsp reloadWorkspace<CR>', { noremap = true, silent = true })
                         vim.keymap.set('n', '<leader>lr', ':RustLsp runnables<CR>', { noremap = true, silent = true })
                         vim.keymap.set('n', '<leader>ldb', ':RustLsp debug<CR>', { noremap = true, silent = true })
-                        vim.keymap.set('n', '<leader>ldd', ':RustLsp debuggables<CR>', { noremap = true, silent = true })
+                        vim.keymap.set('n', '<leader>ldd', ':lua require("dap").continue()<CR>', { noremap = true, silent = true })
                     end,
                     default_settings = {
                         -- rust-analyzer language server configuration

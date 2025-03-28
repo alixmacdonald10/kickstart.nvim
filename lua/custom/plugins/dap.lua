@@ -1,3 +1,27 @@
+-- # CUSTOM DAP CONFIG
+--   custom dap configurations per project can be stored in a .vscode/launch.json in the root of your project. This is then ran using the :lua require("dap").continue() or the custom key binding defined in the rustaceanvim plugin 
+--
+--   An example config is shown below:
+--   {
+--     "version": "0.2.0",
+--     "configurations": [
+--         {
+--             "name": "Cargo Run QObserver",
+--             "type": "codelldb",
+--             "request": "launch",
+--             "program": "${workspaceFolder}/target/debug/qobserver",
+--             "args": [
+--                 "--remote-secrets-provider=azure-key-vault:name=vqadmintst,resource-group=rg-qerent-infra-testing-uks-1"
+--             ],
+--             "cwd": "${workspaceFolder}",
+--             "preLaunchTask": "cargo build",
+--             "sourceLanguages": ["rust"],
+--             "env": {}
+--         }
+--     ]
+--   }
+--
+
 return {
   {
     "mfussenegger/nvim-dap",
