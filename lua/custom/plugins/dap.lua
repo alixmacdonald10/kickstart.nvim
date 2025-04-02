@@ -35,6 +35,17 @@ return {
     keys = {
     -- Basic debugging keymaps, feel free to change to your liking!
     {
+      '<leader>dq',
+      function()
+          local dap = require('dap')
+          local dapui = require('dapui')
+          dap.disconnect()
+          dap.stop()
+          dapui.close()
+      end,
+      desc = 'Debug: Quit',
+    },
+    {
       '<leader>dc',
       function()
         require('dap').continue()
