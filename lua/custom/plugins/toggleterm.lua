@@ -3,10 +3,8 @@ return {
   version = '*',
   opts = {
     open_mapping = [[<leader>tt]],
-    direction = 'float',
-    float_opts = {
-      border = 'curved',
-      title_pos = 'center',
-    },
+    direction = 'vertical',
+    size = 75,
+    persist_size = true
   },
 }
