@@ -12,6 +12,11 @@ vim.g.have_nerd_font = true
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
+-- Enable spell checking
+vim.opt.spell = true
+-- Set the language for spell checking (e.g., English)
+vim.opt.spelllang = 'en_gb'
+
 -- Make line numbers default
 vim.opt.number = true
 vim.opt.relativenumber = true
