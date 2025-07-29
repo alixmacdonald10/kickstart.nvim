@@ -48,27 +48,4 @@ return {
             vim.keymap.set('n', '<leader>tp', toggle, { noremap = true, silent = true, desc = 'Toggle Markdown Preview' })
         end,
     },
-    -- {
-    --     '3rd/image.nvim',
-    --     opts = {
-    --         backend = "kitty",
-    --         markdown = {
-    --             enabled = true,
-    --             clear_in_insert_mode = true,
-    --             download_remote_images = true,
-    --             only_render_image_at_cursor = true,
-    --             floating_windows = false,
-    --             filetypes = { "markdown", "vimwiki" }, -- markdown extensions (ie. quarto) can go here
-    --         },
-    --         neorg = {
-    --             enabled = true,
-    --             filetypes = { "norg" },
-    --         },
-    --         typst = {
-    --             enabled = true,
-    --             filetypes = { "typst" },
-    --         },
-    --     window_overlap_clear_enabled = true,
-    --     }
-    -- },
 }
