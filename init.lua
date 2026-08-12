@@ -874,6 +874,8 @@ require('lazy').setup({
         'html',
         'xml',
         'lua',
+        'make',
+        'just',
         'luadoc',
         'markdown',
         'markdown_inline',
