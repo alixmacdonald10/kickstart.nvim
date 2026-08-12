@@ -132,15 +132,50 @@ return {
       end,
     })
 
-    -- Change diagnostic symbols in the sign column (gutter)
+    -- Diagnostic display.
+    --
+    -- NOTE: Neovim defaults both `virtual_text` and `virtual_lines` to false, so
+    -- without this diagnostics only appear as a gutter sign plus an underline --
+    -- the message itself is never rendered next to the code.
+    local diagnostic_signs = true
     if vim.g.have_nerd_font then
       local signs = { ERROR = '', WARN = '', INFO = '', HINT = '' }
-      local diagnostic_signs = {}
+      diagnostic_signs = {}
       for type, icon in pairs(signs) do
         diagnostic_signs[vim.diagnostic.severity[type]] = icon
       end
-      vim.diagnostic.config { signs = { text = diagnostic_signs } }
+      diagnostic_signs = { text = diagnostic_signs }
     end
+
+    -- Compact '●' text at the end of every diagnostic line *except* the one the
+    -- cursor is on -- that line gets the full, untruncated message rendered
+    -- below it instead, so the common case needs no keypress.
+    --
+    -- `source = 'if_many'` matters for Python, where ruff (lint) and ty (types)
+    -- both attach to the same buffer and an unattributed message is ambiguous.
+    local virt_text = { prefix = '●', source = 'if_many', spacing = 2, current_line = false }
+    local virt_lines = { current_line = true }
+
+    vim.diagnostic.config {
+      signs = diagnostic_signs,
+      underline = true,
+      severity_sort = true,
+      update_in_insert = false,
+      virtual_text = virt_text,
+      virtual_lines = virt_lines,
+      float = { source = 'if_many', border = 'rounded' },
+    }
+
+    -- Expand to full-width lines under *every* diagnostic, not just the cursor's.
+    -- NOTE: `<leader>tv` is already TransparentToggle (lua/plugins/transparent.lua).
+    vim.keymap.set('n', '<leader>tV', function()
+      local current = vim.diagnostic.config().virtual_lines
+      local expanded = type(current) ~= 'table' or current.current_line ~= true
+      vim.diagnostic.config {
+        virtual_lines = expanded and virt_lines or true,
+        virtual_text = expanded and virt_text or false,
+      }
+    end, { desc = 'Toggle diagnostic [V]irtual lines' })
 
     -- LSP servers and clients are able to communicate to each other what features they support.
     --  By default, Neovim doesn't support everything that is in the LSP specification.
@@ -164,24 +199,24 @@ return {
     --  `tools` below, which is what gets handed to mason-tool-installer.
     local servers = {
       -- rust_analyzer = {},  # NOTE: rust-analyzer is managed via rustup
-      basedpyright = {
-        settings = {
-          pyright = {
-            -- Using Ruff's import organizer
-            disableOrganizeImports = true,
-          },
-          python = {
-            analysis = {
-              -- Ignore all files for analysis to exclusively use Ruff for linting
-              ignore = { '*' },
-            },
-          },
-        },
-      },
+
+      -- ruff owns lint, style and import rules; `ty` (see `external_servers`
+      -- below) owns types. Formatting goes through conform
+      -- (`ruff_organize_imports`, `ruff_format` in lua/plugins/conform.lua), so
+      -- the server's own formatter is never asked for.
+      --
       -- NOTE: ruff takes its configuration through `init_options`, not `settings`.
       -- Nesting it under `settings` (as this used to) sends it as a
       -- workspace/didChangeConfiguration payload that ruff ignores.
-      ruff = {},
+      ruff = {
+        -- ruff's hover only explains `noqa` codes. Leaving it on means every
+        -- hover in a Python buffer returns two results and `ty`'s type
+        -- information -- the one that's actually useful -- is no longer
+        -- guaranteed to be first.
+        on_attach = function(client)
+          client.server_capabilities.hoverProvider = false
+        end,
+      },
       sqlls = {},
       marksman = {},
 
@@ -235,6 +270,17 @@ return {
       },
     }
 
+    -- Servers whose binary does not come from Mason. `uvx` fetches and caches
+    -- `ty` on demand, so there is no Mason package to keep in sync and we always
+    -- run the current release. Cost: the very first attach in a fresh uv cache
+    -- pays for the download, and it needs network that once.
+    --
+    -- `/usr/bin` is prepended to PATH in init.lua and `uvx` lives at
+    -- /usr/bin/uvx, so this `cmd` resolves from inside Neovim as-is.
+    local external_servers = {
+      ty = { cmd = { 'uvx', 'ty', 'server' } },
+    }
+
     -- Ensure the servers and tools above are installed
     --  To check the current status of installed tools and/or manually install
     --  other tools, you can run
@@ -247,7 +293,9 @@ return {
     -- not language servers and must never appear in `servers` above.
     local tools = {
       'stylua', -- Used to format Lua code
-      'black',
+      -- NOTE: no black -- Python formatting is ruff's (`ruff_organize_imports`,
+      -- `ruff_format` in lua/plugins/conform.lua). Adding black back would give
+      -- conform two formatters fighting over the same buffer.
       'buf', -- proto fmt
       'prettierd',
       'hadolint',
@@ -266,7 +314,9 @@ return {
     -- through Neovim's own `vim.lsp.config()`, which merges on top of the defaults
     -- that nvim-lspconfig ships in its `lsp/` directory.
     vim.lsp.config('*', { capabilities = capabilities })
-    for name, config in pairs(servers) do
+    -- `tbl_extend('error', ...)` is deliberate: it raises if a name is ever added
+    -- to both tables rather than silently letting one win.
+    for name, config in pairs(vim.tbl_extend('error', servers, external_servers)) do
       if next(config) ~= nil then
         vim.lsp.config(name, config)
       end
@@ -280,5 +330,9 @@ return {
       -- managed by rustaceanvim (see lua/plugins/rust.lua).
       automatic_enable = vim.tbl_keys(servers),
     }
+
+    -- `automatic_enable` above only covers servers Mason installed, so anything
+    -- in `external_servers` has to be enabled by hand.
+    vim.lsp.enable(vim.tbl_keys(external_servers))
   end,
 }
