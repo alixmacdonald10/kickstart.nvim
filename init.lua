@@ -702,6 +702,14 @@ require('lazy').setup({
       local luasnip = require 'luasnip'
       luasnip.config.setup {}
 
+      --setup dadbod
+      cmp.setup.filetype({ 'sql' }, {
+        sources = {
+          { name = ' vim-dadbod-completion' },
+          { name = 'buffer' },
+        },
+      })
+
       cmp.setup {
         snippet = {
           expand = function(args)
