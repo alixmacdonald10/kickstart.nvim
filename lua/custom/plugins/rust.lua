@@ -4,14 +4,10 @@ return {
         dependencies = {
             "mfussenegger/nvim-dap"
         },
-        version = '^5', -- Recommended
-        lazy = false, -- This plugin is already lazy
+        version = '^5',
+        lazy = false,
         config = function()
             vim.g.rustaceanvim = {
-                -- Plugin configuration
-                -- tools = {
-                -- },
-                -- LSP configuration
                 server = {
                     on_attach = function(client, bufnr)
                         vim.keymap.set('n', '<leader>lo', ':RustLsp openDocs<CR>', { noremap = true, silent = true, desc = 'Open Docs' })
@@ -22,17 +18,37 @@ return {
                         vim.keymap.set('n', '<leader>ldd', ':lua require("dap").continue()<CR>', { noremap = true, silent = true, desc = 'Debugables' })
                     end,
                     default_settings = {
-                        -- rust-analyzer language server configuration
                         ['rust-analyzer'] = {
                             cargo = {
-                                allFeatures = true, -- Enable all features by default
+                                allFeatures = true,
+                                loadOutDirsFromCheck = true,
+                            },
+                            checkOnSave = true,
+                            check = {
+                                command = "clippy",
+                                extraArgs = {"--workspace"},
+                                allTargets = true,
+                            },
+                            diagnostics = {
+                                enable = true,
+                                experimental = {
+                                    enable = true,
+                                },
+                                -- Make sure no lifetime errors are disabled
+                                disabled = {},
+                            },
+                            -- Enable more detailed inlay hints
+                            inlayHints = {
+                                lifetimeElisionHints = {
+                                    enable = "always",
+                                    useParameterNames = true,
+                                },
+                                reborrowHints = {
+                                    enable = "always",
+                                },
                             },
                         },
                     },
-                },
-                -- DAP configuration
-                dap = {
-
                 },
             }
         end,
