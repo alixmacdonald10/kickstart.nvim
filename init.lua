@@ -534,14 +534,21 @@ require('lazy').setup({
         marksman = {},
         terraformls = {},
 
+        helm_ls = {},
+        hadolint = {},
         dockerls = {},
         docker_compose_language_service = {},
         tflint = {},
         tfsec = {},
         trivy = {},
+        bufls = {}, --proto
+        buf = {}, --proto
 
+        lemminx = {}, --xml
+        taplo = {}, --toml
         jsonls = {},
         yamlls = {},
+        prettierd = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -675,6 +682,7 @@ require('lazy').setup({
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
+      'kristijanhusak/vim-dadbod-completion',
     },
     config = function()
       -- See `:help cmp`
@@ -825,8 +833,11 @@ require('lazy').setup({
         'python',
         'rust',
         'terraform',
+        'dockerfile',
+        'toml',
         'diff',
         'html',
+        'xml',
         'lua',
         'luadoc',
         'markdown',
@@ -834,6 +845,9 @@ require('lazy').setup({
         'query',
         'vim',
         'vimdoc',
+        'json',
+        'jsonc',
+        'proto',
       },
       -- Autoinstall languages that are not installed
       auto_install = true,
