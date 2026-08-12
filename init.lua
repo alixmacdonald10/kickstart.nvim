@@ -541,8 +541,8 @@ require('lazy').setup({
         tflint = {},
         tfsec = {},
         trivy = {},
-        buf_ls = {}, --proto
-        buf = {}, --proto
+        bufls = {},
+        buf = {}, --proto fmt
 
         lemminx = {}, --xml
         taplo = {}, --toml
