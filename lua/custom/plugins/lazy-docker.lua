@@ -7,7 +7,7 @@ return {
   event = 'BufRead',
   keys = {
     {
-      '<leader>ld',
+      '<leader>Ld',
       function()
         require('lazydocker').open()
       end,
