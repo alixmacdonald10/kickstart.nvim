@@ -1,6 +1,6 @@
 -- Set <space> as the leader key
 -- See `:help mapleader`
---  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
+-- NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
@@ -102,10 +102,8 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
--- key bindings for buffer nav
-vim.keymap.set('n', '<leader>bn', '<Cmd>bprevious<CR>', { desc = 'Next buffer' })
-vim.keymap.set('n', '<leader>bp', '<Cmd>bnext<CR>', { desc = 'Previous buffer' })
-vim.keymap.set('n', '<leader>bc', '<Cmd>bdelete<CR>', { desc = 'Previous buffer' })
+-- keybinding to shut buffer
+vim.keymap.set('n', '<leader>c', '<Cmd>bdelete<CR>', { desc = 'Move focus to the upper window' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -812,9 +810,9 @@ require('lazy').setup({
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
-      -- local statusline = require 'mini.statusline'
+      local statusline = require 'mini.statusline'
       -- set use_icons to true if you have a Nerd Font
-      -- statusline.setup { use_icons = vim.g.have_nerd_font }
+      statusline.setup { use_icons = vim.g.have_nerd_font }
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
@@ -824,7 +822,14 @@ require('lazy').setup({
       -- return '%2l:%-2v'
       -- end
 
+      require('mini.tabline').setup()
+      require('mini.bracketed').setup()
+
+      -- starter splash screen
       require('mini.starter').setup()
+
+      -- comments
+      require('mini.comment').setup()
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
