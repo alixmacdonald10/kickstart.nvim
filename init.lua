@@ -3,6 +3,18 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.g.have_nerd_font = true
 
+-- `~/.local/bin/python3` is a symlink into uv's managed CPython. Virtualenvs created
+-- from it record `home = ~/.local/bin`, which holds no stdlib, so the venv interpreter
+-- dies with `ModuleNotFoundError: No module named 'encodings'` and `ensurepip` fails.
+-- Mason resolves python3 straight from PATH with no setting to override it, so make
+-- sure the system interpreter wins for anything Neovim spawns.
+vim.env.PATH = '/usr/bin:' .. vim.env.PATH
+
+-- Neovim writes LSP server stderr to lsp.log at ERROR unconditionally; this only caps
+-- Neovim's own RPC chatter. Server verbosity is constrained per-server instead
+-- (see the terraform/tofu `indexing` options in lua/plugins/nvim_lspconfig.lua).
+require('vim.lsp.log').set_level(vim.log.levels.WARN)
+
 -- [[OPTIONS]]
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -89,12 +101,12 @@ vim.keymap.set('n', '<leader>c', '<Cmd>bdelete<CR>', { desc = 'Move focus to the
 -- [[ Basic Autocommands ]]
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
---  See `:help vim.highlight.on_yank()`
+--  See `:help vim.hl.on_yank()`
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
-    vim.highlight.on_yank()
+    vim.hl.on_yank()
   end,
 })
 

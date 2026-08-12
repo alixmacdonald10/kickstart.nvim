@@ -2,7 +2,7 @@
 --   custom dap configurations per project can be stored in a .vscode/launch.json in the root of your project. This is then ran using the :lua require("dap").continue() or the custom key binding defined in the rustaceanvim plugin 
 --
 --   An example config is shown below:
---              {
+--    r         {
 --                "version": "0.2.0",
 --     "            configurations": [
               --                      {
@@ -29,7 +29,9 @@ return {
       "rcarriga/nvim-dap-ui",
       "theHamsta/nvim-dap-virtual-text",
       "nvim-neotest/nvim-nio",
-      "williamboman/mason.nvim",
+      -- Must match the name used in lua/plugins/nvim_lspconfig.lua, otherwise
+      -- lazy.nvim treats the old org name as a second, separate plugin.
+      "mason-org/mason.nvim",
       "jay-babu/mason-nvim-dap.nvim",
     },
     keys = {

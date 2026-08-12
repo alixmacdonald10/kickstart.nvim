@@ -11,9 +11,10 @@ return {
       enabled = true,
       timeout = 3000,
     },
+    zen = { enabled = true },
     statuscolumn = { enabled = true },
-    terminal = { enabled = true },
-    lazygit = { enabled = true },
+    -- terminal = { enabled = true },
+    -- lazygit = { enabled = true },
     styles = {
       notification = {
         wo = { wrap = true } -- Wrap notifications
@@ -25,9 +26,12 @@ return {
     { "<leader>n",  function() Snacks.notifier.show_history() end, desc = "Notification History" },
     { "<leader>un", function() Snacks.notifier.hide() end, desc = "Dismiss All Notifications" },
     -- lazygit
-    { "<leader>Lg", function() Snacks.lazygit() end, desc = "Lazygit" },
+    -- { "<leader>Lg", function() Snacks.lazygit() end, desc = "Lazygit" },
     -- terminal
-    {"<leader>tt",  function() Snacks.terminal() end, desc = "Toggle Terminal" },
+    -- {"<leader>tt",  function() Snacks.terminal() end, desc = "Toggle Terminal" },
+    -- zen
+    { "<leader>z",  function() Snacks.zen() end, desc = "Toggle Zen Mode" },
+    { "<leader>Z",  function() Snacks.zen.zoom() end, desc = "Toggle Zoom" },
   },
   init = function()
     vim.api.nvim_create_autocmd("User", {

@@ -37,11 +37,19 @@ return {
                                 -- Make sure no lifetime errors are disabled
                                 disabled = {},
                             },
-                            -- Enable more detailed inlay hints
+                            imports = {
+                                prefix = "crate"
+                            },
+                            -- Detailed inlay hints.
+                            -- NOTE: lifetimeElisionHints is disabled as a stopgap. On
+                            -- Neovim 0.13-dev, hints anchored to elided-lifetime positions
+                            -- race ahead of buffer edits and crash the decoration provider
+                            -- with `inlay_hint.lua:362: Invalid 'col': out of range`.
+                            -- Re-enable ("always" + useParameterNames = true) once Neovim
+                            -- stabilises and check logs/nvim.log stays clean.
                             inlayHints = {
                                 lifetimeElisionHints = {
-                                    enable = "always",
-                                    useParameterNames = true,
+                                    enable = "never",
                                 },
                                 reborrowHints = {
                                     enable = "always",
@@ -74,7 +82,6 @@ return {
                     require("neotest-rust")
                 }
             })
-            vim.keymap.set('n', '<leader>lt', ':Neotest<CR>', { noremap = true, silent = true, desc = 'Neotest' })
             vim.keymap.set('n', '<leader>ltr', ':Neotest run<CR>', { noremap = true, silent = true, desc = 'Run Tests'})
             vim.keymap.set('n', '<leader>ltp', ':Neotest output-panel<CR>', { noremap = true, silent = true, desc = 'Test Panel' })
             vim.keymap.set('n', '<leader>lts', ':Neotest summary<CR>', { noremap = true, silent = true, desc = 'Test Summary'})

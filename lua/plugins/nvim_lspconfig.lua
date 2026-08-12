@@ -3,8 +3,11 @@ return {
   'neovim/nvim-lspconfig',
   dependencies = {
     -- Automatically install LSPs and related tools to stdpath for Neovim
-    { 'williamboman/mason.nvim', config = true }, -- NOTE: Must be loaded before dependants
-    'williamboman/mason-lspconfig.nvim',
+    -- NOTE: Must be loaded before dependants. `config = true` is deliberately absent:
+    -- `mason.setup()` is called explicitly below, and calling it twice re-appends the
+    -- default registries, which logs "Ignoring duplicate registry entry" every startup.
+    'mason-org/mason.nvim',
+    'mason-org/mason-lspconfig.nvim',
     'WhoIsSethDaniel/mason-tool-installer.nvim',
 
     -- Useful status updates for LSP.
@@ -100,7 +103,7 @@ return {
         --
         -- When you move your cursor, the highlights will be cleared (the second autocommand).
         local client = vim.lsp.get_client_by_id(event.data.client_id)
-        if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+        if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
           local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
           vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
             buffer = event.buf,
@@ -123,15 +126,9 @@ return {
           })
         end
 
-        -- The following code creates a keymap to toggle inlay hints in your
-        -- code, if the language server you are using supports them
-        --
-        -- This may be unwanted, since they displace some of your code
-        if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
-          map('<leader>th', function()
-            vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
-          end, '[T]oggle Inlay [H]ints')
-        end
+        -- NOTE: inlay hints are toggled with `<leader>th` by `Snacks.toggle.inlay_hints()`
+        -- in lua/plugins/snacks.lua. A buffer-local mapping here would be shadowed by it
+        -- anyway (snacks maps at startup), so it lives in one place only.
       end,
     })
 
@@ -161,52 +158,58 @@ return {
     --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
     --  - settings (table): Override the default settings passed when initializing the server.
     --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+    --  NOTE: every key here must be a real config name shipped by nvim-lspconfig
+    --  (see `lsp/*.lua` in that plugin, or `:help lspconfig-all`). Formatters,
+    --  linters and scanners are *not* language servers -- those belong in
+    --  `tools` below, which is what gets handed to mason-tool-installer.
     local servers = {
       -- rust_analyzer = {},  # NOTE: rust-analyzer is managed via rustup
-      -- basedpyright = {
-      --   settings = {
-      --     pyright = {
-      --       -- Using Ruff's import organizer
-      --       disableOrganizeImports = true,
-      --     },
-      --     python = {
-      --       analysis = {
-      --         -- Ignore all files for analysis to exclusively use Ruff for linting
-      --         ignore = { '*' },
-      --       },
-      --     },
-      --   },
-      -- },
-      ruff = {
+      basedpyright = {
         settings = {
-          trace = 'messages',
-          init_options = {
-            settings = {
-              logLevel = 'debug',
+          pyright = {
+            -- Using Ruff's import organizer
+            disableOrganizeImports = true,
+          },
+          python = {
+            analysis = {
+              -- Ignore all files for analysis to exclusively use Ruff for linting
+              ignore = { '*' },
             },
           },
         },
       },
-      black = {},
+      -- NOTE: ruff takes its configuration through `init_options`, not `settings`.
+      -- Nesting it under `settings` (as this used to) sends it as a
+      -- workspace/didChangeConfiguration payload that ruff ignores.
+      ruff = {},
       sqlls = {},
       marksman = {},
-      terraformls = {},
+
+      -- NOTE: terraformls is deliberately absent. It claims the same `terraform`
+      -- filetype as tofu_ls, so both would attach and index the workspace twice.
+      --
+      -- `root_markers` includes `.git`, so in a repo that also builds Rust the
+      -- indexer walks `target/`. That walk goes to stderr, and Neovim records LSP
+      -- stderr at ERROR unconditionally -- which is what grew lsp.log to 282MB.
+      tofu_ls = {
+        init_options = {
+          indexing = {
+            ignoreDirectoryNames = { 'target', 'node_modules', 'dist', '.venv' },
+          },
+        },
+      },
 
       helm_ls = {},
-      hadolint = {},
       dockerls = {},
       docker_compose_language_service = {},
+      tinymist = {},
       tflint = {},
-      tfsec = {},
-      trivy = {},
-      --buf_ls = {},
-      buf = {}, --proto fmt
 
       lemminx = {}, --xml
       taplo = {}, --toml
       jsonls = {},
       yamlls = {},
-      prettierd = {},
+      texlab = {},
       -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
       --
       -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -240,29 +243,42 @@ return {
     --  You can press `g?` for help in this menu.
     require('mason').setup()
 
-    -- You can add other tools here that you want Mason to install
-    -- for you, so that they are available from within Neovim.
-    local ensure_installed = vim.tbl_keys(servers or {})
-    vim.list_extend(ensure_installed, {
+    -- Formatters, linters and scanners. These are plain Mason packages -- they are
+    -- not language servers and must never appear in `servers` above.
+    local tools = {
       'stylua', -- Used to format Lua code
-      'buf-language-server',
-      'buf',
+      'black',
+      'buf', -- proto fmt
+      'prettierd',
+      'hadolint',
+      'tfsec',
+      'trivy',
       'yamlfix',
       'yamllint',
-    })
+    }
+
+    local ensure_installed = vim.tbl_keys(servers)
+    vim.list_extend(ensure_installed, tools)
     require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
+    -- NOTE: mason-lspconfig v2 removed `setup { handlers = ... }`; it now only
+    -- accepts `ensure_installed` and `automatic_enable`. Server configuration goes
+    -- through Neovim's own `vim.lsp.config()`, which merges on top of the defaults
+    -- that nvim-lspconfig ships in its `lsp/` directory.
+    vim.lsp.config('*', { capabilities = capabilities })
+    for name, config in pairs(servers) do
+      if next(config) ~= nil then
+        vim.lsp.config(name, config)
+      end
+    end
+
     require('mason-lspconfig').setup {
-      handlers = {
-        function(server_name)
-          local server = servers[server_name] or {}
-          -- This handles overriding only values explicitly passed
-          -- by the server configuration above. Useful when disabling
-          -- certain features of an LSP (for example, turning off formatting for ts_ls)
-          server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-          require('lspconfig')[server_name].setup(server)
-        end,
-      },
+      -- mason-tool-installer owns installation, so nothing to install here.
+      ensure_installed = {},
+      -- Enable exactly the servers configured above, and nothing else Mason
+      -- happens to have installed. rust_analyzer is deliberately absent -- it is
+      -- managed by rustaceanvim (see lua/plugins/rust.lua).
+      automatic_enable = vim.tbl_keys(servers),
     }
   end,
 }

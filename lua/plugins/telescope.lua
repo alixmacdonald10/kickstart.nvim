@@ -1,7 +1,10 @@
 return { -- Fuzzy Finder (files, lsp, etc)
 'nvim-telescope/telescope.nvim',
 event = 'VimEnter',
-branch = '0.1.x',
+-- NOTE: no `branch = '0.1.x'`. That tag is from 2024 and its preview highlighter
+-- calls `nvim-treesitter.parsers.ft_to_lang()`, which the treesitter `main` branch
+-- removed -- previewing any file threw `attempt to call field 'ft_to_lang'`.
+-- Telescope's default branch uses Neovim's own `vim.treesitter.start()` instead.
 dependencies = {
   'nvim-lua/plenary.nvim',
   { -- If encountering errors, see telescope-fzf-native README for installation instructions
