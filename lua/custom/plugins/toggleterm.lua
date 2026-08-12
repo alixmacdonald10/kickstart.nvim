@@ -4,9 +4,12 @@ return {
   config = function()
     require("toggleterm").setup({
       open_mapping = [[<leader>tt]],
-      direction = 'vertical',
-      size = 75,
-      persist_size = true
+      direction = 'float',
+      float_opts = {
+        border = 'curved',
+        winblend = 3,
+        title_pos = 'center'
+      },
     })
     
     -- Create an autocommand to disable spell check in ToggleTerm buffers
