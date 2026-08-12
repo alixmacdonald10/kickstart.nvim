@@ -13,6 +13,16 @@ return {
             vim.api.nvim_set_keymap('n', '<leader>tm', ':RenderMarkdown toggle<CR>', { noremap = true, silent = true })
         end,
     },
+    
+    {
+        "iamcco/markdown-preview.nvim",
+        cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+        build = "cd app && yarn install",
+        init = function()
+            vim.g.mkdp_filetypes = { "markdown" }
+        end,
+        ft = { "markdown" },
+    },
     {
         '3rd/image.nvim',
         opts = {
@@ -27,4 +37,14 @@ return {
             },
         },
     },
+    -- {
+    --     "3rd/diagram.nvim",
+    --     dependencies = {
+    --         "3rd/image.nvim",
+    --     },
+    --     opts = {},
+    --     config = function(_, opts)
+    --         require('diagram').setup(opts)
+    --     end,
+    -- },
 }
