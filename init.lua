@@ -12,10 +12,21 @@ vim.g.have_nerd_font = true
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
--- Enable spell checking
+-- Enable spell checking by default
 vim.opt.spell = true
--- Set the language for spell checking (e.g., English)
 vim.opt.spelllang = 'en_gb'
+
+-- Toggle function
+function toggle_spell()
+  if vim.wo.spell then
+    vim.wo.spell = false
+  else
+    vim.wo.spell = true
+  end
+end
+
+-- Keymap to toggle spell checking
+vim.keymap.set('n', '<leader>ts', toggle_spell, { desc = 'Toggle spell check' })
 
 -- Make line numbers default
 vim.opt.number = true
