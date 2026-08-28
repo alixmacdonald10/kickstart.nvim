@@ -220,6 +220,17 @@ return {
       sqlls = {},
       marksman = {},
 
+      -- Tailwind. v4 moved config out of `tailwind.config.js` and into CSS
+      -- (`@import "tailwindcss"` + `@theme`), so there is often no config file to
+      -- key off; nvim-lspconfig's shipped `lsp/tailwindcss.lua` already handles
+      -- that by ending its `root_dir` list with `.git`.
+      --
+      -- Consequence of that fallback: in any git repo, opening a buffer whose
+      -- filetype is in the server's default list (html, css, md, js/ts, vue,
+      -- svelte, templ, heex, php, ...) spawns the server. Accepted -- it is one
+      -- node process and it exits with the buffer.
+      tailwindcss = {},
+
       -- NOTE: terraformls is deliberately absent. It claims the same `terraform`
       -- filetype as tofu_ls, so both would attach and index the workspace twice.
       --

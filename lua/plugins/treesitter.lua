@@ -31,6 +31,9 @@ return {
       'toml',
       'diff',
       'html',
+      -- Tailwind v4 keeps its config in CSS (`@theme`, `@utility`, `@apply`), so
+      -- without this parser those files highlight as plain text.
+      'css',
       'xml',
       'lua',
       'make',
