@@ -199,24 +199,8 @@ return {
     --  `tools` below, which is what gets handed to mason-tool-installer.
     local servers = {
       -- rust_analyzer = {},  # NOTE: rust-analyzer is managed via rustup
+      -- NOTE: Python (ruff + ty) lives in `external_servers` below.
 
-      -- ruff owns lint, style and import rules; `ty` (see `external_servers`
-      -- below) owns types. Formatting goes through conform
-      -- (`ruff_organize_imports`, `ruff_format` in lua/plugins/conform.lua), so
-      -- the server's own formatter is never asked for.
-      --
-      -- NOTE: ruff takes its configuration through `init_options`, not `settings`.
-      -- Nesting it under `settings` (as this used to) sends it as a
-      -- workspace/didChangeConfiguration payload that ruff ignores.
-      ruff = {
-        -- ruff's hover only explains `noqa` codes. Leaving it on means every
-        -- hover in a Python buffer returns two results and `ty`'s type
-        -- information -- the one that's actually useful -- is no longer
-        -- guaranteed to be first.
-        on_attach = function(client)
-          client.server_capabilities.hoverProvider = false
-        end,
-      },
       sqlls = {},
       marksman = {},
 
@@ -281,15 +265,32 @@ return {
       },
     }
 
-    -- Servers whose binary does not come from Mason. `uvx` fetches and caches
-    -- `ty` on demand, so there is no Mason package to keep in sync and we always
-    -- run the current release. Cost: the very first attach in a fresh uv cache
-    -- pays for the download, and it needs network that once.
+    -- Servers whose binary does not come from Mason. Python's ruff and ty are
+    -- installed globally with `uv tool install ruff ty` (into ~/.local/bin) and
+    -- upgraded with `uv tool upgrade --all`. nvim-lspconfig's defaults already
+    -- run `ruff server` / `ty server` from PATH, so no `cmd` override is needed.
     --
-    -- `/usr/bin` is prepended to PATH in init.lua and `uvx` lives at
-    -- /usr/bin/uvx, so this `cmd` resolves from inside Neovim as-is.
+    -- NOTE: keep ruff *uninstalled* in Mason. Mason prepends its bin dir to
+    -- PATH, so a stale Mason ruff would shadow the uv one -- for conform's
+    -- `ruff_format` / `ruff_organize_imports` too.
     local external_servers = {
-      ty = { cmd = { 'uvx', 'ty', 'server' } },
+      -- ruff owns lint, style and import rules; ty owns types. Formatting goes
+      -- through conform (lua/plugins/conform.lua), so the server's own
+      -- formatter is never asked for.
+      --
+      -- NOTE: ruff takes its configuration through `init_options`, not
+      -- `settings`. Nesting it under `settings` sends it as a
+      -- workspace/didChangeConfiguration payload that ruff ignores.
+      ruff = {
+        -- ruff's hover only explains `noqa` codes. Leaving it on means every
+        -- hover in a Python buffer returns two results and ty's type
+        -- information -- the one that's actually useful -- is no longer
+        -- guaranteed to be first.
+        on_attach = function(client)
+          client.server_capabilities.hoverProvider = false
+        end,
+      },
+      ty = {},
     }
 
     -- Ensure the servers and tools above are installed
